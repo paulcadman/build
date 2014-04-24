@@ -20,11 +20,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 -->
 <project name="html5-validator" basedir="." default="build">
+  <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask">
+    <classpath>
+      <fileset file="jarjar-cfl-r367361.jar"/>
+    </classpath>
+  </taskdef>
   <target name="build" depends="clean, dist"/>
+  <target name="build-jarjar" depends="clean, dist-jarjar"/>
   <target name="clean">
     <delete file="./vnu/vnu.jar"/>
   </target>
   <target name="dist" depends="jar, credits"/>
+  <target name="dist-jarjar" depends="jarjar, credits"/>
   <target name="jar">
     <jar destfile="./vnu/vnu.jar" duplicate="preserve">
       <zipgroupfileset dir="../jars" includes="*.jar"/>
@@ -59,6 +66,62 @@ DEALINGS IN THE SOFTWARE.
         <provider classname="org.whattf.datatype.Html5DatatypeLibraryFactory"/>
       </service>
     </jar>
+  </target>
+  <target name="jarjar">
+    <jarjar destfile="./vnu/vnu-jarjar.jar" duplicate="preserve" services="rename">
+      <zipgroupfileset dir="../jars" includes="*.jar"/>
+      <zipfileset src="../jing-trang/build/jing.jar"/>
+      <zipfileset src="../dependencies/apache-log4j-1.2.15/log4j-1.2.15.jar"/>
+      <zipfileset src="../dependencies/commons-codec-1.4/commons-codec-1.4.jar"/>
+      <zipfileset src="../dependencies/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar"/>
+      <zipfileset src="../dependencies/commons-httpclient-3.1/commons-httpclient-3.1.jar"/>
+      <zipfileset src="../dependencies/commons-logging-1.1.1/commons-logging-1.1.1.jar"/>
+      <zipfileset src="../dependencies/commons-logging-1.1.1/commons-logging-adapters-1.1.1.jar"/>
+      <zipfileset src="../dependencies/commons-logging-1.1.1/commons-logging-api-1.1.1.jar"/>
+      <zipfileset src="../dependencies/icu4j-4_4_2.jar"/>
+      <zipfileset src="../dependencies/icu4j-charsets-4_4_2.jar"/>
+      <zipfileset src="../dependencies/iri-0.5/lib/iri.jar"/>
+      <zipfileset src="../dependencies/galimatias-0.0.4.jar"/>
+      <zipfileset src="../dependencies/isorelax.jar"/>
+      <zipfileset src="../dependencies/jetty-6.1.26/lib/jetty-6.1.26.jar"/>
+      <zipfileset src="../dependencies/jetty-6.1.26/lib/ext/jetty-ajp-6.1.26.jar"/>
+      <zipfileset src="../dependencies/jetty-6.1.26/lib/jetty-util-6.1.26.jar"/>
+      <zipfileset src="../dependencies/jetty-6.1.26/lib/servlet-api-2.5-20081211.jar"/>
+      <zipfileset src="../dependencies/mozilla/intl/chardet/java/dist/lib/chardet.jar"/>
+      <zipfileset src="../dependencies/rhino1_7R1/js.jar"/>
+      <zipfileset src="../dependencies/saxon9.jar"/>
+      <zipfileset src="../dependencies/slf4j-1.5.2/slf4j-log4j12-1.5.2.jar"/>
+      <zipfileset src="../dependencies/xerces-2_9_1/xercesImpl.jar"/>
+      <zipfileset src="../dependencies/xerces-2_9_1/xml-apis.jar"/>
+      <rule pattern="nu.validator.**" result="@0"/>
+      <rule pattern="org.xml.sax.**" result="@0"/>
+      <rule pattern="com.thaiopensource.**" result="@0"/>
+      <rule pattern="org.whattf.**" result="@0"/>
+      <rule pattern="org.relaxng.**" result="@0"/>
+      <rule pattern="javax.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="socket.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="dom.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="antlr.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="jp.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="sax.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="ui.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="mx4j.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="io.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="xs.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="xni.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="org.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="net.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="jaxp.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="com.**" result="nu.validator.internal.org.@1"/>
+      <rule pattern="junit.**" result="nu.validator.internal.org.@1"/>
+      <manifest>
+        <attribute name="Main-Class" value="nu.validator.client.SimpleCommandLineValidator"/>
+      </manifest>
+      <service type="org.relaxng.datatype.DatatypeLibraryFactory">
+        <provider classname="com.thaiopensource.datatype.xsd.DatatypeLibraryFactoryImpl"/>
+        <provider classname="org.whattf.datatype.Html5DatatypeLibraryFactory"/>
+      </service>
+    </jarjar>
   </target>
   <target name="war" depends="dist">
     <echo file="./vnu/war/web.xml" append="false"

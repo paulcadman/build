@@ -675,7 +675,7 @@ def runValidator():
   args = getRunArgs(str(int(heapSize) * 1024))
   execCmd(javaCmd, args)
 
-def createDist():
+def createDist(jarjar=False):
   distDir = (os.path.join(buildRoot, "build", "vnu"))
   removeIfDirExists(distDir)
   os.mkdir(distDir)
@@ -683,15 +683,21 @@ def createDist():
   antJar= os.path.join(antRoot, "ant.jar")
   antLauncherJar = os.path.join(antRoot, "ant-launcher.jar")
   classPath = os.pathsep.join([antJar, antLauncherJar])
-  runCmd('"%s" -cp %s org.apache.tools.ant.Main -f %s'
-    % (javaCmd, classPath, os.path.join(buildRoot, "build", "build.xml")))
-  version = subprocess.check_output([javaCmd, "-jar", os.path.join(distDir, "vnu.jar"), "--version"]).rstrip()
+  if jarjar:
+      target = "build-jarjar"
+      jarSuffix = "-jarjar"
+  else:
+      target = "build"
+      jarSuffix = ""
+  runCmd('"%s" -cp %s org.apache.tools.ant.Main -f %s %s'
+    % (javaCmd, classPath, os.path.join(buildRoot, "build", "build.xml"), target))
+  version = subprocess.check_output([javaCmd, "-jar", os.path.join(distDir, "vnu%s.jar" % jarSuffix), "--version"]).rstrip()
   readmeHtml = "https://raw.github.com/validator/validator.github.io/master/index.html"
   readmeMarkdown = "https://raw.github.com/validator/validator.github.io/master/README.md"
   fetchUrlTo(readmeHtml, os.path.join(distDir, "index.html"))
   fetchUrlTo(readmeMarkdown, os.path.join(distDir, "README.md"))
   os.chdir("build")
-  distroFile = os.path.join("vnu-" + version + ".zip")
+  distroFile = os.path.join("vnu%s-%s.zip" % (jarSuffix,version))
   removeIfExists(distroFile)
   zf = zipfile.ZipFile(distroFile, "w")
   for dirname, subdirs, files in os.walk("vnu"):
@@ -993,15 +999,16 @@ def printHelp():
   print "                                the validator URL"
   print ""
   print "Tasks:"
-  print "  checkout -- Checks out the sources"
-  print "  dldeps   -- Downloads missing dependency libraries and entities"
-  print "  dltests  -- Downloads the external test suite if missing"
-  print "  build    -- Build the source"
-  print "  test     -- Run tests"
-  print "  run      -- Run the system"
-  print "  all      -- checkout dldeps dltests build test run"
-  print "  dist     -- Create a release distribution"
-  print "  war      -- Create a WAR file containing a release distribution"
+  print "  checkout    -- Checks out the sources"
+  print "  dldeps      -- Downloads missing dependency libraries and entities"
+  print "  dltests     -- Downloads the external test suite if missing"
+  print "  build       -- Build the source"
+  print "  test        -- Run tests"
+  print "  run         -- Run the system"
+  print "  all         -- checkout dldeps dltests build test run"
+  print "  dist        -- Create a release distribution"
+  print "  dist-jarjar -- Create a release distribution JARJAR"
+  print "  war         -- Create a WAR file containing a release distribution"
 
 buildScript = sys.argv[0]
 argv = sys.argv[1:]
@@ -1117,6 +1124,11 @@ else:
     elif arg == 'dist':
       if noSelfUpdate:
         createDist()
+      else:
+        selfUpdate()
+    elif arg == "dist-jarjar":
+      if noSelfUpdate:
+        createDist(jarjar=True)
       else:
         selfUpdate()
     elif arg == 'war':
